@@ -1,0 +1,1417 @@
+<!DOCTYPE html>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+<html class="theme-next pisces use-motion" lang="zh-CN">
+<head><meta name="generator" content="Hexo 3.8.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+
+
+
+
+  
+  
+    
+    
+  <script src="/lib/pace/pace.min.js?v=1.0.2"></script>
+  <link rel="stylesheet" href="/lib/pace/pace-theme-minimal.min.css?v=1.0.2">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2">
+
+<link rel="stylesheet" href="/css/main.css?v=7.1.0">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=7.1.0">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.ico?v=7.1.0">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.ico?v=7.1.0">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=7.1.0" color="#222">
+
+
+
+
+
+
+
+<script id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Pisces',
+    version: '7.1.0',
+    sidebar: {"position":"right","display":"post","offset":12,"onmobile":false,"dimmer":false},
+    back2top: true,
+    back2top_sidebar: true,
+    fancybox: false,
+    fastclick: false,
+    lazyload: false,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+  
+
+
+
+
+  <meta name="description" content="一、假设函数与梯度下降1.1 假设函数在之前的单变量线性回归中，只涉及到一个特征，所以假设函数为：  h_\theta(x) = \theta_0+\theta_1x对于多变量来说，类似地可得假设函数：  h_\theta(x)=\theta_0+\theta_1x_1+\theta_2x_2+...+\theta_nx_n观察这个假设函数，我们可以发现这是向量內积的表现形式，因此我们可以对其进行">
+<meta name="keywords" content="Machine Learning,Linear Regression,Multiple linear Regression">
+<meta property="og:type" content="article">
+<meta property="og:title" content="CS229(三) - 多变量线性回归">
+<meta property="og:url" content="http://yoursite.com/2019/05/01/ml3/index.html">
+<meta property="og:site_name" content="ACnoWA&#39;s Blog">
+<meta property="og:description" content="一、假设函数与梯度下降1.1 假设函数在之前的单变量线性回归中，只涉及到一个特征，所以假设函数为：  h_\theta(x) = \theta_0+\theta_1x对于多变量来说，类似地可得假设函数：  h_\theta(x)=\theta_0+\theta_1x_1+\theta_2x_2+...+\theta_nx_n观察这个假设函数，我们可以发现这是向量內积的表现形式，因此我们可以对其进行">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:image" content="http://yoursite.com/2019/05/01/ml3/1.png">
+<meta property="og:image" content="http://yoursite.com/2019/05/01/ml3/2.png">
+<meta property="og:image" content="http://yoursite.com/2019/05/01/ml3/3.png">
+<meta property="og:updated_time" content="2019-05-03T09:47:39.408Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="CS229(三) - 多变量线性回归">
+<meta name="twitter:description" content="一、假设函数与梯度下降1.1 假设函数在之前的单变量线性回归中，只涉及到一个特征，所以假设函数为：  h_\theta(x) = \theta_0+\theta_1x对于多变量来说，类似地可得假设函数：  h_\theta(x)=\theta_0+\theta_1x_1+\theta_2x_2+...+\theta_nx_n观察这个假设函数，我们可以发现这是向量內积的表现形式，因此我们可以对其进行">
+<meta name="twitter:image" content="http://yoursite.com/2019/05/01/ml3/1.png">
+
+
+
+
+
+  
+  
+  <link rel="canonical" href="http://yoursite.com/2019/05/01/ml3/">
+
+
+
+<script id="page.configurations">
+  CONFIG.page = {
+    sidebar: "",
+  };
+</script>
+
+  <title>CS229(三) - 多变量线性回归 | ACnoWA's Blog</title>
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .motion-element,
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-title { opacity: initial; }
+
+  .use-motion .logo,
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-CN">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-right page-post-detail">
+    <div class="headband"></div>
+	<a href="https://github.com/ACnoWA/ACnoWA.github.io" class="github-corner" aria-label="View source on GitHub">
+		<svg width="80" height="80" viewbox="0 0 250 250" style="fill:#151513; color:#fff; position: absolute; top: 0; border: 0; left: 0; transform: scale(-1, 1);" aria-hidden="true"><path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"/><path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"/><path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"/></svg><style>.github-corner:hover .octo-arm{animation:octocat-wave 560ms ease-in-out}@keyframes octocat-wave{0%,100%{transform:rotate(0)}20%,60%{transform:rotate(-25deg)}40%,80%{transform:rotate(10deg)}}@media (max-width:500px){.github-corner:hover .octo-arm{animation:none}.github-corner .octo-arm{animation:octocat-wave 560ms ease-in-out}}</style>
+	</a>
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">ACnoWA's Blog</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+    
+    
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="切换导航栏">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  
+    <ul id="menu" class="menu">
+      
+        
+        
+        
+          
+          <li class="menu-item menu-item-home">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/" rel="section"><i class="menu-item-icon fa fa-fw fa-home"></i> <br>首页</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-tags">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/tags/" rel="section"><i class="menu-item-icon fa fa-fw fa-tags"></i> <br>标签</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-categories">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/categories/" rel="section"><i class="menu-item-icon fa fa-fw fa-th"></i> <br>分类</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-archives">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/archives/" rel="section"><i class="menu-item-icon fa fa-fw fa-archive"></i> <br>归档</a>
+
+  </li>
+
+      
+      
+        <li class="menu-item menu-item-search">
+          
+            <a href="javascript:;" class="popup-trigger">
+          
+            
+              <i class="menu-item-icon fa fa-search fa-fw"></i> <br>搜索</a>
+        </li>
+      
+    </ul>
+  
+
+  
+
+  
+    <div class="site-search">
+      
+  <div class="popup search-popup local-search-popup">
+  <div class="local-search-header clearfix">
+    <span class="search-icon">
+      <i class="fa fa-search"></i>
+    </span>
+    <span class="popup-btn-close">
+      <i class="fa fa-times-circle"></i>
+    </span>
+    <div class="local-search-input-wrapper">
+      <input autocomplete="off" placeholder="搜索..." spellcheck="false" type="text" id="local-search-input">
+    </div>
+  </div>
+  <div id="local-search-result"></div>
+</div>
+
+
+
+    </div>
+  
+</nav>
+
+
+
+  
+
+
+
+</div>
+    </header>
+
+    
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+            
+
+          
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2019/05/01/ml3/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="ACnoWA">
+      <meta itemprop="description" content="成功的含义不在于得到什么，而是在于你从那个奋斗的起点走了多远。">
+      <meta itemprop="image" content="/images/nabi.jpeg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="ACnoWA's Blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">CS229(三) - 多变量线性回归
+
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+
+              
+                
+              
+
+              <time title="创建时间：2019-05-01 08:14:32" itemprop="dateCreated datePublished" datetime="2019-05-01T08:14:32+08:00">2019-05-01</time>
+            
+
+            
+              
+
+              
+                
+                <span class="post-meta-divider">|</span>
+                
+
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">更新于</span>
+                
+                <time title="修改时间：2019-05-03 17:47:39" itemprop="dateModified" datetime="2019-05-03T17:47:39+08:00">2019-05-03</time>
+              
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/Machine-Learning/" itemprop="url" rel="index"><span itemprop="name">Machine Learning</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h3 id="一、假设函数与梯度下降"><a href="#一、假设函数与梯度下降" class="headerlink" title="一、假设函数与梯度下降"></a>一、假设函数与梯度下降</h3><h4 id="1-1-假设函数"><a href="#1-1-假设函数" class="headerlink" title="1.1 假设函数"></a>1.1 假设函数</h4><p>在之前的<strong>单变量</strong>线性回归中，只涉及到一个特征，所以假设函数为：</p>
+<script type="math/tex; mode=display">
+h_\theta(x) = \theta_0+\theta_1x</script><p>对于<strong>多变量</strong>来说，类似地可得假设函数：</p>
+<script type="math/tex; mode=display">
+h_\theta(x)=\theta_0+\theta_1x_1+\theta_2x_2+...+\theta_nx_n</script><p>观察这个假设函数，我们可以发现这是向量內积的表现形式，因此我们可以对其进行简化表示。首先定义$x_0=1$，则此时假设函数为：</p>
+<script type="math/tex; mode=display">
+h_\theta(x)=\theta_0x_0+\theta_1x_1+\theta_2x_2+...+\theta_nx_n</script><p>再令：</p>
+<script type="math/tex; mode=display">
+\theta=\begin{bmatrix}
+\theta_0\\
+\theta_1\\
+\theta_2\\
+.\\
+.\\
+.\\
+\theta_n
+\end{bmatrix},\quad\quad\quad\quad\quad\quad
+x=\begin{bmatrix}
+x_0\\
+x_1\\
+x_2\\
+.\\
+.\\
+.\\
+x_n
+\end{bmatrix}</script><p>这样就得到了假设函数的向量表示：</p>
+<script type="math/tex; mode=display">
+h_\theta(x)=\theta_0x_0+\theta_1x_1+\theta_2x_2+...+\theta_nx_n=\theta^Tx</script><h4 id="1-2-梯度下降算法"><a href="#1-2-梯度下降算法" class="headerlink" title="1.2 梯度下降算法"></a>1.2 梯度下降算法</h4><script type="math/tex; mode=display">
+repeat\ until \ convergence\ \{\\
+    \theta_j :=\theta_j-\alpha\frac{1}{m}\sum_{i=1}^m{h_\theta(x^{(i)}-y^{(i)})x_j^{(i)}}\\ (simultaneously \ update \ \theta_j \ for \ j=0,...,n)\\
+    x^{(i)}_j中的i表示整个数据集中的第i个样本数据，j表示在第i个样本数据中的第j个特征的值\
+    \}</script><p>在具体编程实现时，上述公式的代码实现如下。其中$\theta$为行向量；$X$为数据集矩阵，每一行为一个数据集中的一个样本数据；y为输出对象的数据集。</p>
+<script type="math/tex; mode=display">
+\theta = \theta - \alpha*(1/m)*X'*(X*\theta-y)</script><h3 id="二、特征处理"><a href="#二、特征处理" class="headerlink" title="二、特征处理"></a>二、特征处理</h3><h4 id="2-1-特征缩放-Feature-Scaling"><a href="#2-1-特征缩放-Feature-Scaling" class="headerlink" title="2.1 特征缩放 (Feature Scaling)"></a>2.1 特征缩放 (Feature Scaling)</h4><ul>
+<li><p><strong>引言：</strong>在多变量线性回归中，如果每个特征的<em>取值范围相差很大</em>，那么在梯度下降算法的<em>执行就会很慢</em>。而当各个特征值的取值范围相近时，梯度下降算法就能快速的收敛到最小值。</p>
+</li>
+<li><p><strong>方法</strong>：<font color="brown"> 所以在进行梯度下降之前，首先对数据做特征缩放处理。</font>从而使得各特征的取值都在相近的数据范围内。因为$x_0=1$，所以其余的特征缩放到$[-1, 1]$之间是比较理想的。</p>
+</li>
+</ul>
+<h4 id="2-2-均值归一化-Mean-normalization"><a href="#2-2-均值归一化-Mean-normalization" class="headerlink" title="2.2 均值归一化(Mean normalization)"></a>2.2 均值归一化(Mean normalization)</h4><p>均值归一化是特征缩放的方法之一。</p>
+<script type="math/tex; mode=display">
+x_i = \frac{x_i-\mu_i}{s_i} \\
+(\mu_i是x_i数据的均值，s_i是x_i数据的最大值与最小值之差或者标准差)</script><p>特征缩放不需要特别准确的缩放到某一范围，只要使得各数据的范围相近就行。</p>
+<h3 id="三、代价函数与学习率"><a href="#三、代价函数与学习率" class="headerlink" title="三、代价函数与学习率"></a>三、代价函数与学习率</h3><ul>
+<li><p><strong>引言：</strong>在运行梯度下降算法时，学习率的大小一般是通过尝试不同的值($eg: \ …,\ 0.001,\ 0.003,\ 0.01,\ 0.03,\ 0.1, \ 0.3,\ 1,….)$的方式来找到一个适合当前问题的学习率。</p>
+</li>
+<li><p><strong>方法1：</strong>我们可以通过画出代价函数与迭代次数的曲线图来观察梯度下降的运行。从而判断此时的梯度下降算法是否能收敛。</p>
+<p><img src="/2019/05/01/ml3/1.png" alt="1556676029440"></p>
+<p>如图，横坐标轴代表迭代次数，纵坐标代表代价函数值。该图展示的是梯度下降的每部迭代后，代价函数的值。这是当梯度函数正常运行是的一种曲线图，因为每一步迭代之后代价函数都在减少。同时，我们可以看到当迭代到达300之后，代价函数的值变化很小，400次后就近乎收敛了。</p>
+<p><img src="/2019/05/01/ml3/2.png" alt="1556676883487"></p>
+</li>
+<li><p><strong>方法2：</strong>自动收敛测试。即，每次迭代之后观察$J(\theta)$的值；如果迭代之后下降的值小于$\epsilon$（$eg：\epsilon = 10^{-3}$)就判定为收敛。但是准确地选择阈值$\epsilon$是非常困难的，所以该方法不常用。</p>
+</li>
+<li><p><strong>结论：</strong>数学家已经证明，对于线性回归问题，只要学习率足够小，每次迭代之后代价函数都会下降。因此代价函数如果没有下降，那可能是学习率太大。当然学习率也不能太小，否则下降的速度会很慢。</p>
+</li>
+</ul>
+<h3 id="四、特征选择与多项式回归"><a href="#四、特征选择与多项式回归" class="headerlink" title="四、特征选择与多项式回归"></a>四、特征选择与多项式回归</h3><h4 id="1-特征选择"><a href="#1-特征选择" class="headerlink" title="1. 特征选择"></a>1. 特征选择</h4><p>对于问题所给出的特征，我们不一定就是直接利用现有的特征构造模型。我们可以根据情景，利用现有的特征进行组合构造出更适合的特征，构造更准确的模型。</p>
+<blockquote>
+<p>假设预测房屋价格, 提供房屋的长和宽作为变量, 得到如下的假设函数：</p>
+<script type="math/tex; mode=display">
+h_(\theta) = \theta_0+\theta_1*frontage+\theta_2*depth\\
+(frontage是指临街的宽度，depth是指纵深)</script><p>但是我们可以自己创造特征，利用面积去预测房价：</p>
+<script type="math/tex; mode=display">
+h_(\theta) = \theta_0+\theta_1x\\
+(x是frontage与depth的乘积)</script></blockquote>
+<h4 id="2-多项式回归-Polynomial-Regression"><a href="#2-多项式回归-Polynomial-Regression" class="headerlink" title="2. 多项式回归(Polynomial Regression)"></a>2. 多项式回归(Polynomial Regression)</h4><p>和特征选择密切相关的一个概念就是多项式回归。</p>
+<blockquote>
+<p>假设有如下的住房价格的数据集，可能会有多个不同的模型用于拟合。</p>
+</blockquote>
+<p><img src="/2019/05/01/ml3/3.png" alt="1556681730093"></p>
+<blockquote>
+<p>根据房价和土地大小的性质，这里用三次多项式进行拟合会是较适合的一种情况。</p>
+<script type="math/tex; mode=display">
+h_\theta(x)=\theta_0+\theta_1(size)+\theta_2(size)^2+\theta_3(size)^3</script><p>但是如何将模型与数据拟合呢？我们可以使用多元线性回归的方法。</p>
+<script type="math/tex; mode=display">
+h_\theta(x)=\theta_0+\theta_1x+\theta_2x_2+\theta_3x_3</script><p>比较两式子，我们可以通过将x1设为$(size)$，x2设为$(size)^2$，x3设为$(size)^3$实现两式的对应。再利用已学的多元线性回归知识，最终将一个三次函数拟合到数据集上。在这一过程，我们就能发现特征缩放的重要性。</p>
+<p>根据对平方根函数的了解，也可以选择平方根函数模型</p>
+<script type="math/tex; mode=display">
+h_\theta(x)=\theta_0+\theta_1(size)+\theta_2\sqrt[2]{(size)}</script></blockquote>
+<h3 id="五、正规方程"><a href="#五、正规方程" class="headerlink" title="五、正规方程"></a>五、正规方程</h3><h4 id="1-正规方程"><a href="#1-正规方程" class="headerlink" title="1. 正规方程"></a>1. 正规方程</h4><p>之前我们一直用的是梯度下降求解最优解，在于的缺点在于需要进行多次迭代才能得到全局的最优解。而正规方程提供了一种解析方法，一次性（一步）求解，不需要迭代。</p>
+<blockquote>
+<p>现有一个代价函数：$J(\theta)=a\theta^2+b\theta+c\ (\theta \in R)$。如何最小化该函数呢？</p>
+<p>我们对该函数求导，并令导数等于0，就可求得使$J(\theta)$最小的$\theta$值。</p>
+<p>当$\theta \in R^{n+1}$，即$\theta$为向量时；代价函数是这个向量的函数：$ J(\theta<em>0, \theta_1,…,\theta_m) =\frac{1}{2m}\sum</em>{i=1}^m{h_\theta(x^{(i)}-y^{(i)})^2}$，要最小化该函数，我们需要对每一个变量求偏导并令等式等于0。从而求出每一个值，能是的该函数最小。</p>
+</blockquote>
+<p><strong>设计矩阵X：</strong>矩阵的每一行是所有特征的一个样本数据$(x^{(0)}_i,x^{(1)}_i,…,x^{(m)}_i)$，上标$(0,…,m)$表示特征的序列，下标$i$表示矩阵的第$i$行，第$i$个样本数据。注意这里$x^{0}_i$恒为1。</p>
+<p><strong>目标对象样本向量y：</strong>$y =\begin{bmatrix} y1 \ y2 \ .\ .\ .\ y_n\end{bmatrix}$</p>
+<p><strong>正规方程计算公式：</strong></p>
+<script type="math/tex; mode=display">
+\theta=(X^TX)^{-1}X^Ty\\
+X\theta=y,\
+(X^TX)是为了将X转为方阵</script><p>这样计算出最优的$\theta$，其能最小化这个代价函数。同时，使用正规方程计算时，不用考虑特征缩放问题。</p>
+<h4 id="2-正规方程与梯度下降的比较"><a href="#2-正规方程与梯度下降的比较" class="headerlink" title="2. 正规方程与梯度下降的比较"></a>2. 正规方程与梯度下降的比较</h4><div class="table-container">
+<table>
+<thead>
+<tr>
+<th style="text-align:center">梯度下降</th>
+<th style="text-align:center">正规方程</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center">需要寻找合适的学习率</td>
+<td style="text-align:center">不需要学习率</td>
+</tr>
+<tr>
+<td style="text-align:center">当特征量小时，需要进行多次迭代</td>
+<td style="text-align:center">特征量小时，一次计算求得，优于梯度下降</td>
+</tr>
+<tr>
+<td style="text-align:center">当有大量特征时，依然能适用</td>
+<td style="text-align:center">当特征量大时，矩阵维度很大，运算$(X^TX)^{-1}$很慢</td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>对于后续的复杂算法，如$logistic$分类算法，正规方程不适用。</p>
+<h3 id="六、Octave"><a href="#六、Octave" class="headerlink" title="六、Octave"></a>六、Octave</h3><font color="red">octave中定义的函数能返回多个值。</font>
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+      
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/Machine-Learning/" rel="tag"><i class="fa fa-tag"></i> Machine Learning</a>
+          
+            <a href="/tags/Linear-Regression/" rel="tag"><i class="fa fa-tag"></i> Linear Regression</a>
+          
+            <a href="/tags/Multiple-linear-Regression/" rel="tag"><i class="fa fa-tag"></i> Multiple linear Regression</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2019/04/07/ml2/" rel="next" title="CS229(二) - 单变量线性回归">
+                <i class="fa fa-chevron-left"></i> CS229(二) - 单变量线性回归
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2019/05/01/matlabGexe/" rel="prev" title="matlabGexe">
+                matlabGexe <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+  </div>
+
+
+          </div>
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image" src="/images/nabi.jpeg" alt="ACnoWA">
+            
+              <p class="site-author-name" itemprop="name">ACnoWA</p>
+              <div class="site-description motion-element" itemprop="description">成功的含义不在于得到什么，而是在于你从那个奋斗的起点走了多远。</div>
+          </div>
+
+          
+            <nav class="site-state motion-element">
+              
+                <div class="site-state-item site-state-posts">
+                
+                  <a href="/archives/">
+                
+                    <span class="site-state-item-count">10</span>
+                    <span class="site-state-item-name">日志</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-categories">
+                  
+                    
+                      <a href="/categories/">
+                    
+                  
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">3</span>
+                    <span class="site-state-item-name">分类</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-tags">
+                  
+                    
+                      <a href="/tags/">
+                    
+                  
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">26</span>
+                    <span class="site-state-item-name">标签</span>
+                  </a>
+                </div>
+              
+            </nav>
+          
+
+          
+
+          
+
+          
+
+          
+
+          
+          
+
+          
+            
+          
+          
+
+        </div>
+      </div>
+
+      
+      <!--noindex-->
+        <div class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+            
+            
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#一、假设函数与梯度下降"><span class="nav-number">1.</span> <span class="nav-text">一、假设函数与梯度下降</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#1-1-假设函数"><span class="nav-number">1.1.</span> <span class="nav-text">1.1 假设函数</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#1-2-梯度下降算法"><span class="nav-number">1.2.</span> <span class="nav-text">1.2 梯度下降算法</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#二、特征处理"><span class="nav-number">2.</span> <span class="nav-text">二、特征处理</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#2-1-特征缩放-Feature-Scaling"><span class="nav-number">2.1.</span> <span class="nav-text">2.1 特征缩放 (Feature Scaling)</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#2-2-均值归一化-Mean-normalization"><span class="nav-number">2.2.</span> <span class="nav-text">2.2 均值归一化(Mean normalization)</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#三、代价函数与学习率"><span class="nav-number">3.</span> <span class="nav-text">三、代价函数与学习率</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#四、特征选择与多项式回归"><span class="nav-number">4.</span> <span class="nav-text">四、特征选择与多项式回归</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#1-特征选择"><span class="nav-number">4.1.</span> <span class="nav-text">1. 特征选择</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#2-多项式回归-Polynomial-Regression"><span class="nav-number">4.2.</span> <span class="nav-text">2. 多项式回归(Polynomial Regression)</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#五、正规方程"><span class="nav-number">5.</span> <span class="nav-text">五、正规方程</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#1-正规方程"><span class="nav-number">5.1.</span> <span class="nav-text">1. 正规方程</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#2-正规方程与梯度下降的比较"><span class="nav-number">5.2.</span> <span class="nav-text">2. 正规方程与梯度下降的比较</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#六、Octave"><span class="nav-number">6.</span> <span class="nav-text">六、Octave</span></a></li></ol></div>
+            
+
+          </div>
+        </div>
+      <!--/noindex-->
+      
+
+      
+        <div class="back-to-top">
+          <i class="fa fa-arrow-up"></i>
+          
+            <span id="scrollpercent"><span>0</span>%</span>
+          
+        </div>
+      
+
+    </div>
+  </aside>
+  
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+<div class="copyright">&copy; <span itemprop="copyrightYear">2019</span>
+  <span class="with-love" id="animate">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">ACnoWA</span>
+
+  
+
+  
+</div>
+
+
+<div class="powered-by">
+	<i class="fa fa-user-md"></i><span id="busuanzi_container_site_uv">
+	本站访客数:<span id="busuanzi_value_site_uv"></span>
+	</span>
+</div>
+
+  <!--<div class="powered-by">由 <a href="https://hexo.io" class="theme-link" rel="noopener" target="_blank">Hexo</a> 强力驱动 v3.8.0</div>-->
+
+
+
+
+
+
+
+
+        
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+
+    
+
+    
+
+    
+  </div>
+
+  
+
+<script>
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  <script src="/lib/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+
+  
+
+
+  <script src="/js/utils.js?v=7.1.0"></script>
+
+  <script src="/js/motion.js?v=7.1.0"></script>
+
+
+
+  
+  
+
+
+  <script src="/js/affix.js?v=7.1.0"></script>
+
+  <script src="/js/schemes/pisces.js?v=7.1.0"></script>
+
+
+
+  
+  <script src="/js/scrollspy.js?v=7.1.0"></script>
+<script src="/js/post-details.js?v=7.1.0"></script>
+
+
+
+  
+
+
+  <script src="/js/next-boot.js?v=7.1.0"></script>
+
+
+  
+
+  
+
+  
+
+  
+
+
+  
+
+
+  
+  <script>
+    // Popup Window;
+    var isfetched = false;
+    var isXml = true;
+    // Search DB path;
+    var search_path = "search.xml";
+    if (search_path.length === 0) {
+      search_path = "search.xml";
+    } else if (/json$/i.test(search_path)) {
+      isXml = false;
+    }
+    var path = "/" + search_path;
+    // monitor main search box;
+
+    var onPopupClose = function (e) {
+      $('.popup').hide();
+      $('#local-search-input').val('');
+      $('.search-result-list').remove();
+      $('#no-result').remove();
+      $(".local-search-pop-overlay").remove();
+      $('body').css('overflow', '');
+    }
+
+    function proceedsearch() {
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay"></div>')
+        .css('overflow', 'hidden');
+      $('.search-popup-overlay').click(onPopupClose);
+      $('.popup').toggle();
+      var $localSearchInput = $('#local-search-input');
+      $localSearchInput.attr("autocapitalize", "none");
+      $localSearchInput.attr("autocorrect", "off");
+      $localSearchInput.focus();
+    }
+
+    // search function;
+    var searchFunc = function(path, search_id, content_id) {
+      'use strict';
+
+      // start loading animation
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay">' +
+          '<div id="search-loading-icon">' +
+          '<i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>' +
+          '</div>' +
+          '</div>')
+        .css('overflow', 'hidden');
+      $("#search-loading-icon").css('margin', '20% auto 0 auto').css('text-align', 'center');
+
+      
+
+      $.ajax({
+        url: path,
+        dataType: isXml ? "xml" : "json",
+        async: true,
+        success: function(res) {
+          // get the contents from search data
+          isfetched = true;
+          $('.popup').detach().appendTo('.header-inner');
+          var datas = isXml ? $("entry", res).map(function() {
+            return {
+              title: $("title", this).text(),
+              content: $("content",this).text(),
+              url: $("url" , this).text()
+            };
+          }).get() : res;
+          var input = document.getElementById(search_id);
+          var resultContent = document.getElementById(content_id);
+          var inputEventFunction = function() {
+            var searchText = input.value.trim().toLowerCase();
+            var keywords = searchText.split(/[\s\-]+/);
+            if (keywords.length > 1) {
+              keywords.push(searchText);
+            }
+            var resultItems = [];
+            if (searchText.length > 0) {
+              // perform local searching
+              datas.forEach(function(data) {
+                var isMatch = false;
+                var hitCount = 0;
+                var searchTextCount = 0;
+                var title = data.title.trim();
+                var titleInLowerCase = title.toLowerCase();
+                var content = data.content.trim().replace(/<[^>]+>/g,"");
+                
+                var contentInLowerCase = content.toLowerCase();
+                var articleUrl = decodeURIComponent(data.url).replace(/\/{2,}/g, '/');
+                var indexOfTitle = [];
+                var indexOfContent = [];
+                // only match articles with not empty titles
+                if(title != '') {
+                  keywords.forEach(function(keyword) {
+                    function getIndexByWord(word, text, caseSensitive) {
+                      var wordLen = word.length;
+                      if (wordLen === 0) {
+                        return [];
+                      }
+                      var startPosition = 0, position = [], index = [];
+                      if (!caseSensitive) {
+                        text = text.toLowerCase();
+                        word = word.toLowerCase();
+                      }
+                      while ((position = text.indexOf(word, startPosition)) > -1) {
+                        index.push({position: position, word: word});
+                        startPosition = position + wordLen;
+                      }
+                      return index;
+                    }
+
+                    indexOfTitle = indexOfTitle.concat(getIndexByWord(keyword, titleInLowerCase, false));
+                    indexOfContent = indexOfContent.concat(getIndexByWord(keyword, contentInLowerCase, false));
+                  });
+                  if (indexOfTitle.length > 0 || indexOfContent.length > 0) {
+                    isMatch = true;
+                    hitCount = indexOfTitle.length + indexOfContent.length;
+                  }
+                }
+
+                // show search results
+
+                if (isMatch) {
+                  // sort index by position of keyword
+
+                  [indexOfTitle, indexOfContent].forEach(function (index) {
+                    index.sort(function (itemLeft, itemRight) {
+                      if (itemRight.position !== itemLeft.position) {
+                        return itemRight.position - itemLeft.position;
+                      } else {
+                        return itemLeft.word.length - itemRight.word.length;
+                      }
+                    });
+                  });
+
+                  // merge hits into slices
+
+                  function mergeIntoSlice(text, start, end, index) {
+                    var item = index[index.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    var hits = [];
+                    var searchTextCountInSlice = 0;
+                    while (position + word.length <= end && index.length != 0) {
+                      if (word === searchText) {
+                        searchTextCountInSlice++;
+                      }
+                      hits.push({position: position, length: word.length});
+                      var wordEnd = position + word.length;
+
+                      // move to next position of hit
+
+                      index.pop();
+                      while (index.length != 0) {
+                        item = index[index.length - 1];
+                        position = item.position;
+                        word = item.word;
+                        if (wordEnd > position) {
+                          index.pop();
+                        } else {
+                          break;
+                        }
+                      }
+                    }
+                    searchTextCount += searchTextCountInSlice;
+                    return {
+                      hits: hits,
+                      start: start,
+                      end: end,
+                      searchTextCount: searchTextCountInSlice
+                    };
+                  }
+
+                  var slicesOfTitle = [];
+                  if (indexOfTitle.length != 0) {
+                    slicesOfTitle.push(mergeIntoSlice(title, 0, title.length, indexOfTitle));
+                  }
+
+                  var slicesOfContent = [];
+                  while (indexOfContent.length != 0) {
+                    var item = indexOfContent[indexOfContent.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    // cut out 100 characters
+                    var start = position - 20;
+                    var end = position + 80;
+                    if(start < 0){
+                      start = 0;
+                    }
+                    if (end < position + word.length) {
+                      end = position + word.length;
+                    }
+                    if(end > content.length){
+                      end = content.length;
+                    }
+                    slicesOfContent.push(mergeIntoSlice(content, start, end, indexOfContent));
+                  }
+
+                  // sort slices in content by search text's count and hits' count
+
+                  slicesOfContent.sort(function (sliceLeft, sliceRight) {
+                    if (sliceLeft.searchTextCount !== sliceRight.searchTextCount) {
+                      return sliceRight.searchTextCount - sliceLeft.searchTextCount;
+                    } else if (sliceLeft.hits.length !== sliceRight.hits.length) {
+                      return sliceRight.hits.length - sliceLeft.hits.length;
+                    } else {
+                      return sliceLeft.start - sliceRight.start;
+                    }
+                  });
+
+                  // select top N slices in content
+
+                  var upperBound = parseInt('1');
+                  if (upperBound >= 0) {
+                    slicesOfContent = slicesOfContent.slice(0, upperBound);
+                  }
+
+                  // highlight title and content
+
+                  function highlightKeyword(text, slice) {
+                    var result = '';
+                    var prevEnd = slice.start;
+                    slice.hits.forEach(function (hit) {
+                      result += text.substring(prevEnd, hit.position);
+                      var end = hit.position + hit.length;
+                      result += '<b class="search-keyword">' + text.substring(hit.position, end) + '</b>';
+                      prevEnd = end;
+                    });
+                    result += text.substring(prevEnd, slice.end);
+                    return result;
+                  }
+
+                  var resultItem = '';
+
+                  if (slicesOfTitle.length != 0) {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + highlightKeyword(title, slicesOfTitle[0]) + "</a>";
+                  } else {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + title + "</a>";
+                  }
+
+                  slicesOfContent.forEach(function (slice) {
+                    resultItem += "<a href='" + articleUrl + "'>" +
+                      "<p class=\"search-result\">" + highlightKeyword(content, slice) +
+                      "...</p>" + "</a>";
+                  });
+
+                  resultItem += "</li>";
+                  resultItems.push({
+                    item: resultItem,
+                    searchTextCount: searchTextCount,
+                    hitCount: hitCount,
+                    id: resultItems.length
+                  });
+                }
+              })
+            };
+            if (keywords.length === 1 && keywords[0] === "") {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-search fa-5x"></i></div>'
+            } else if (resultItems.length === 0) {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-frown-o fa-5x"></i></div>'
+            } else {
+              resultItems.sort(function (resultLeft, resultRight) {
+                if (resultLeft.searchTextCount !== resultRight.searchTextCount) {
+                  return resultRight.searchTextCount - resultLeft.searchTextCount;
+                } else if (resultLeft.hitCount !== resultRight.hitCount) {
+                  return resultRight.hitCount - resultLeft.hitCount;
+                } else {
+                  return resultRight.id - resultLeft.id;
+                }
+              });
+              var searchResultList = '<ul class=\"search-result-list\">';
+              resultItems.forEach(function (result) {
+                searchResultList += result.item;
+              })
+              searchResultList += "</ul>";
+              resultContent.innerHTML = searchResultList;
+            }
+          }
+
+          if ('auto' === 'auto') {
+            input.addEventListener('input', inputEventFunction);
+          } else {
+            $('.search-icon').click(inputEventFunction);
+            input.addEventListener('keypress', function (event) {
+              if (event.keyCode === 13) {
+                inputEventFunction();
+              }
+            });
+          }
+
+          // remove loading animation
+          $(".local-search-pop-overlay").remove();
+          $('body').css('overflow', '');
+
+          proceedsearch();
+        }
+      });
+    }
+
+    // handle and trigger popup window;
+    $('.popup-trigger').click(function(e) {
+      e.stopPropagation();
+      if (isfetched === false) {
+        searchFunc(path, 'local-search-input', 'local-search-result');
+      } else {
+        proceedsearch();
+      };
+    });
+
+    $('.popup-btn-close').click(onPopupClose);
+    $('.popup').click(function(e){
+      e.stopPropagation();
+    });
+    $(document).on('keyup', function (event) {
+      var shouldDismissSearchPopup = event.which === 27 &&
+        $('.search-popup').is(':visible');
+      if (shouldDismissSearchPopup) {
+        onPopupClose();
+      }
+    });
+  </script>
+
+
+
+
+
+  
+
+  
+
+  
+  
+
+  
+  
+
+  
+    
+      <script type="text/x-mathjax-config">
+  
+
+  MathJax.Hub.Config({
+    tex2jax: {
+      inlineMath: [ ['$', '$'], ['\\(', '\\)'] ],
+      processEscapes: true,
+      skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+    },
+    TeX: {
+      
+      equationNumbers: {
+        autoNumber: 'AMS'
+      }
+    }
+  });
+  MathJax.Hub.Register.StartupHook('TeX Jax Ready', function() {
+    MathJax.InputJax.TeX.prefilterHooks.Add(function(data) {
+      if (data.display) {
+        var next = data.script.nextSibling;
+        while (next && next.nodeName.toLowerCase() === '#text') { next = next.nextSibling }
+        if (next && next.nodeName.toLowerCase() === 'br') { next.parentNode.removeChild(next) }
+      }
+    });
+  });
+</script>
+
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Queue(function() {
+    var all = MathJax.Hub.getAllJax(), i;
+    for (i = 0; i < all.length; i += 1) {
+      document.getElementById(all[i].inputID + '-Frame').parentNode.className += ' has-jax';
+    }
+  });
+</script>
+<script src="//cdn.jsdelivr.net/npm/mathjax@2/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+    
+  
+
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>
